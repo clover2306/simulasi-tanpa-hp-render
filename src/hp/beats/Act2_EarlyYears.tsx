@@ -4,7 +4,7 @@ import {W} from '../../lib/tokens';
 import {PIXEL_FONT} from '../../pixelFont';
 import {PX, PixelBubble, PixelCard, PixelChip, PixelSprite} from '../../components/PixelUI';
 import {Walker, type WalkerSpec} from '../../components/Walker';
-import {beatDur, pxSnap, step01} from '../plan';
+import {beatDur, smooth01} from '../plan';
 import {DimensionLabelsBar} from '../hud';
 import {ParallelMapStage} from '../map';
 import {SplitWorldStage} from '../stage';
@@ -19,17 +19,18 @@ export const B11_Tahun12: React.FC = () => {
   let strength = 0;
   if (f < 335) {
     focus = 'left';
-    strength = f < 300 ? step01(f, 12, 48, 6) : 1 - step01(f, 300, 335, 6);
+    strength = f < 295 ? smooth01(f, 12, 52) : 1 - smooth01(f, 295, 335);
   } else if (f < 695) {
     focus = 'right';
-    strength = f < 660 ? step01(f, 335, 370, 6) : 1 - step01(f, 660, 695, 6);
+    strength = f < 655 ? smooth01(f, 335, 375) : 1 - smooth01(f, 655, 695);
   } else {
     focus = 'left';
-    strength = step01(f, 695, 730, 6) * 0.75;
+    strength = smooth01(f, 695, 735) * 0.75;
   }
 
   const earlySleep = f >= 135 && f < 235;
-  const belumShadow = f >= 585 && f < 695;
+  const belumShadowOp =
+    f >= 585 && f < 695 ? 0.34 * smooth01(f, 585, 605) * (1 - smooth01(f, 675, 695)) : 0;
 
   // Extra walkers for "bertanya jam" in Kertajaya plaza
   const askTimeWalkers: WalkerSpec[] =
@@ -68,7 +69,7 @@ export const B11_Tahun12: React.FC = () => {
       kertajayaPocketSearch={f < 135}
       fastBubbles={f >= 335 && f < 695}
       earlyNightKertajaya={earlySleep}
-      dimRight={belumShadow ? 0.34 : 0}
+      dimRight={belumShadowOp}
       extraWalkers={askTimeWalkers}
     >
       {f < 130 ? (
@@ -204,14 +205,14 @@ export const B13_DikaY3: React.FC = () => {
               <PixelSprite
                 src="bubble_msg.png"
                 x={408}
-                y={246 + pxSnap(Math.sin(f / 6) * 5, 2)}
+                y={246 + Math.sin(f / 6) * 5}
                 w={60}
                 h={46}
               />
               <PixelSprite
                 src="bubble_msg.png"
                 x={152}
-                y={278 + pxSnap(Math.cos(f / 7) * 4, 2)}
+                y={278 + Math.cos(f / 7) * 4}
                 w={48}
                 h={37}
               />
@@ -253,9 +254,9 @@ export const B14_KartuBeland: React.FC = () => (
 
 export const B15_EndangY3: React.FC = () => {
   const f = useCurrentFrame();
-  // Emphasize Mekarsari clearly (splitRatio=0.36 -> leftW=460, rightW=820) per Pagar 5
+  // Emphasize Mekarsari clearly (splitRatio=0.36 -> leftW=460.8, rightW=819.2) per Pagar 5
   const splitRatio = 0.36;
-  const leftW = pxSnap(W * splitRatio, 4);
+  const leftW = W * splitRatio;
   const rightW = W - leftW;
   const takingPhoto = f < 260 || f % 90 < 60;
 
@@ -267,18 +268,19 @@ export const B15_EndangY3: React.FC = () => {
       dimLeft={0.22}
       leftContent={
         <>
-          <div style={{position: 'absolute', left: 108, top: 244}}>
+          <div style={{position: 'absolute', left: 68, top: 248}}>
             <PixelSprite src="portrait_endang_serve.png" w={164} h={338} />
           </div>
-          <Walker sprite="villager_green" path={[[336, 578]]} scale={1.5} idleFacingLeft />
+          <Walker sprite="villager_green" path={[[342, 586]]} scale={5.0} idleFacingLeft />
           <PixelChip
             text="PENGHASILAN SAMA SAJA • TETANGGA SENDIRI"
-            x={Math.round(leftW / 2)}
-            y={594}
+            x={leftW / 2}
+            y={602}
             centerX
             borderColor="#8A7E6E"
             color="#D8CFC2"
             fontSize={8}
+            style={{zIndex: 44}}
           />
         </>
       }
@@ -286,11 +288,11 @@ export const B15_EndangY3: React.FC = () => {
         <>
           <PixelSprite src="signal_tower.png" x={rightW - 92} y={120} w={58} h={94} />
           {/* Grounded overflowing baskets resting on the open dirt market path */}
-          <PixelSprite src="basket_goods.png" x={338} y={536} w={68} h={62} />
-          <PixelSprite src="basket_goods.png" x={422} y={546} w={68} h={62} />
-          <PixelSprite src="basket_goods.png" x={506} y={536} w={68} h={62} />
+          <PixelSprite src="basket_goods.png" x={328} y={536} w={68} h={62} />
+          <PixelSprite src="basket_goods.png" x={408} y={546} w={68} h={62} />
+          <PixelSprite src="basket_goods.png" x={488} y={536} w={68} h={62} />
 
-          <div style={{position: 'absolute', left: 146, top: 232}}>
+          <div style={{position: 'absolute', left: 132, top: 228}}>
             <PixelSprite
               src={takingPhoto ? 'portrait_endang_photo.png' : 'portrait_endang_happy.png'}
               w={176}
@@ -298,15 +300,15 @@ export const B15_EndangY3: React.FC = () => {
             />
           </div>
 
-          {/* Orders via signal tower + buyers entering ONLY from far right outer edge (Pagar 12) */}
+          {/* Orders via signal tower + proportional buyers entering ONLY from far right outer edge (Pagar 12) */}
           {[0, 1].map((i) => {
             const u = ((f * 2.2 + i * 42) % 96) / 96;
             return (
               <PixelSprite
                 key={i}
                 src="bubble_msg.png"
-                x={pxSnap(rightW - 104 - u * 360, 2)}
-                y={pxSnap(168 + u * 140, 2)}
+                x={rightW - 104 - u * 360}
+                y={168 + u * 140}
                 w={44}
                 h={34}
               />
@@ -316,38 +318,39 @@ export const B15_EndangY3: React.FC = () => {
           <Walker
             sprite="villager_blue"
             path={[
-              [rightW - 22, 578],
-              [610, 578],
+              [rightW - 44, 588],
+              [620, 588],
             ]}
             speed={52}
             loopMode="pingpong"
             phase={0.1}
-            scale={1.5}
+            scale={5.2}
             idleFacingLeft
             carryingPhone
           />
           <Walker
             sprite="villager_red"
             path={[
-              [rightW - 18, 590],
-              [682, 590],
+              [rightW - 36, 594],
+              [724, 594],
             ]}
             speed={46}
             loopMode="pingpong"
             phase={0.55}
-            scale={1.5}
+            scale={5.0}
             idleFacingLeft
             carryingPhone
           />
 
           <PixelChip
             text="FOTO KE GRUP • PEMBELI DATANG DARI LUAR DESA"
-            x={Math.round(rightW / 2)}
-            y={594}
+            x={rightW / 2}
+            y={602}
             centerX
             borderColor={PX.blueLight}
             color="#E8F6FF"
             fontSize={10}
+            style={{zIndex: 44}}
           />
         </>
       }
@@ -487,7 +490,7 @@ export const B18_UltahTia: React.FC = () => {
               key={idx}
               src="bubble_msg.png"
               x={298 + dx}
-              y={398 + dy + pxSnap(Math.sin(f / 7 + idx) * 6, 2)}
+              y={398 + dy + Math.sin(f / 7 + idx) * 6}
               w={40}
               h={31}
             />
@@ -526,6 +529,7 @@ export const B19_HarjoMakanMontase: React.FC = () => {
   const f = useCurrentFrame();
   const laughOpen = Math.floor(f / 6) % 2 === 0;
   const highlightDishes = f >= 210;
+  const dishU = smooth01(f, 210, 226);
 
   return (
     <SplitWorldStage
@@ -552,19 +556,20 @@ export const B19_HarjoMakanMontase: React.FC = () => {
               h={355}
             />
           </div>
-          <div style={{position: 'absolute', left: 26, top: 382, width: 64, height: 84, overflow: 'hidden'}}>
-            <PixelSprite src="villager_green_walk_0.png" w={56} h={91} />
+          {/* Proportional seated children (~240-247px scale, cropped cleanly at waist/lap) */}
+          <div style={{position: 'absolute', left: 0, top: 344, width: 148, height: 168, overflow: 'hidden'}}>
+            <PixelSprite src="villager_green_walk_0.png" w={148} h={240} />
           </div>
-          <div style={{position: 'absolute', left: 422, top: 366, width: 64, height: 80, overflow: 'hidden'}}>
-            <PixelSprite src="villager_blue_walk_0.png" w={56} h={91} flipX />
+          <div style={{position: 'absolute', left: 476, top: 416, width: 152, height: 178, overflow: 'hidden'}}>
+            <PixelSprite src="villager_blue_walk_0.png" w={152} h={247} flipX />
           </div>
 
-          <PixelBubble text="Hahaha! Seru banget, Yah!" x={24} y={248} maxW={220} at={24} />
+          <PixelBubble text="Hahaha! Seru banget, Yah!" x={14} y={216} maxW={220} at={24} />
           <PixelBubble
             text="Terus gimana ceritanya?"
-            x={364}
-            y={254}
-            maxW={220}
+            x={392}
+            y={268}
+            maxW={226}
             tail="bottom-right"
             at={110}
           />
@@ -578,6 +583,7 @@ export const B19_HarjoMakanMontase: React.FC = () => {
                 top: 424,
                 width: 288,
                 height: 124,
+                opacity: dishU,
                 border: `3px dashed ${PX.gold}`,
                 boxShadow: '0 0 0 2px #000',
                 pointerEvents: 'none',
@@ -588,10 +594,11 @@ export const B19_HarjoMakanMontase: React.FC = () => {
           <PixelChip
             text="BERCERITA SAMPAI TERTAWA"
             x={320}
-            y={590}
+            y={602}
             centerX
             borderColor={PX.gold}
             fontSize={10}
+            style={{zIndex: 44}}
           />
         </>
       }
@@ -609,19 +616,19 @@ export const B19_HarjoMakanMontase: React.FC = () => {
           >
             <PixelSprite src="portrait_harjo_dinner_phone.png" w={172} h={355} />
           </div>
-          <div style={{position: 'absolute', left: 26, top: 382}}>
-            <div style={{width: 64, height: 84, overflow: 'hidden'}}>
-              <PixelSprite src="villager_green_walk_0.png" w={56} h={91} />
+          <div style={{position: 'absolute', left: 0, top: 344}}>
+            <div style={{width: 148, height: 168, overflow: 'hidden'}}>
+              <PixelSprite src="villager_green_walk_0.png" w={148} h={240} />
             </div>
-            <PixelSprite src="hp_hand.png" x={38} y={40} w={22} h={28} />
+            <PixelSprite src="hp_hand.png" x={96} y={102} w={42} h={52} />
           </div>
-          <div style={{position: 'absolute', left: 422, top: 366}}>
-            <div style={{width: 64, height: 80, overflow: 'hidden'}}>
-              <PixelSprite src="villager_blue_walk_0.png" w={56} h={91} flipX />
+          <div style={{position: 'absolute', left: 476, top: 416}}>
+            <div style={{width: 152, height: 178, overflow: 'hidden'}}>
+              <PixelSprite src="villager_blue_walk_0.png" w={152} h={247} flipX />
             </div>
-            <PixelSprite src="hp_hand.png" x={-4} y={38} w={22} h={28} />
+            <PixelSprite src="hp_hand.png" x={12} y={108} w={42} h={52} />
           </div>
-          <PixelSprite src="hp_table.png" x={408} y={522} w={40} h={28} />
+          <PixelSprite src="hp_table.png" x={392} y={526} w={44} h={31} />
 
           {highlightDishes ? (
             <div
@@ -631,6 +638,7 @@ export const B19_HarjoMakanMontase: React.FC = () => {
                 top: 424,
                 width: 288,
                 height: 124,
+                opacity: dishU,
                 border: `3px dashed ${PX.gold}`,
                 boxShadow: '0 0 0 2px #000',
                 pointerEvents: 'none',
@@ -641,11 +649,12 @@ export const B19_HarjoMakanMontase: React.FC = () => {
           <PixelChip
             text="MAKAN DALAM DIAM • MASING-MASING LAYAR"
             x={320}
-            y={590}
+            y={602}
             centerX
             borderColor={PX.blueLight}
             color="#D8EEFF"
             fontSize={9}
+            style={{zIndex: 44}}
           />
         </>
       }
@@ -659,7 +668,12 @@ export const B19_HarjoMakanMontase: React.FC = () => {
           borderColor={PX.gold}
           bg="rgba(18, 16, 14, 0.96)"
           pad="12px 22px"
-          style={{zIndex: 48, textAlign: 'center'}}
+          style={{
+            zIndex: 48,
+            textAlign: 'center',
+            opacity: dishU,
+            transform: `scale(${0.94 + 0.06 * dishU})`,
+          }}
         >
           <div style={{fontSize: 13, color: PX.gold}}>MAKANANNYA SAMA PERSIS</div>
           <div style={{fontSize: 10, color: PX.white, marginTop: 8}}>
@@ -680,78 +694,82 @@ export const B20_OmenY5: React.FC = () => {
       leftContent={
         <>
           {/* Radio & bicycle repaired (background bicycle on right; water pump narration-only per Pagar 10a!) */}
-          <div style={{position: 'absolute', left: 192, top: 228}}>
+          <div style={{position: 'absolute', left: 158, top: 228}}>
             <PixelSprite src="portrait_omen_repair_radio.png" w={172} h={355} />
           </div>
-          <PixelSprite src="radio.png" x={66} y={362} w={78} h={66} />
-          {/* Villagers walking cleanly on open wooden plank floor */}
+          <PixelSprite src="radio.png" x={54} y={362} w={78} h={66} />
+          {/* Proportional adult villagers walking cleanly on open wooden plank floor */}
           <Walker
             sprite="villager_green"
             path={[
-              [368, 584],
-              [446, 584],
+              [378, 586],
+              [428, 586],
             ]}
-            speed={38}
-            scale={1.45}
+            speed={22}
+            scale={5.2}
             idleFacingLeft
             chatDot
           />
           <Walker
             sprite="villager_red"
             path={[
-              [568, 588],
-              [492, 588],
+              [554, 592],
+              [506, 592],
             ]}
-            speed={36}
-            scale={1.45}
+            speed={20}
+            scale={5.0}
             idleFacingLeft
           />
           <PixelChip
             text="RADIO & SEPEDA • MENJADI TUKANG SEGALA"
             x={320}
-            y={594}
+            y={602}
             centerX
             borderColor={PX.gold}
             fontSize={10}
+            style={{zIndex: 44}}
           />
         </>
       }
       rightContent={
         <>
-          <div style={{position: 'absolute', left: 196, top: 228}}>
+          <div style={{position: 'absolute', left: 168, top: 228}}>
             <PixelSprite src="portrait_omen_repair_hp.png" w={172} h={355} />
           </div>
-          {/* Growing phone stack resting on wooden workbench + second stack on display counter */}
-          <PixelSprite src="hp_pile.png" x={472} y={378} w={90} h={68} />
-          <PixelSprite src="hp_table.png" x={568} y={396} w={48} h={34} />
+          {/* Growing phone stack resting on wooden workbench */}
+          <PixelSprite src="hp_pile.png" x={508} y={378} w={90} h={68} />
 
-          {/* One hired generic villager assistant standing on open checkered tile floor */}
-          <div style={{position: 'absolute', left: 374, top: 484}}>
-            <PixelSprite src="villager_blue_walk_0.png" w={56} h={91} flipX />
+          {/* One hired generic villager assistant standing grounded on open checkered tile floor */}
+          <div style={{position: 'absolute', left: 348, top: 318}}>
             <div
               style={{
-                marginTop: 2,
+                position: 'absolute',
+                left: '50%',
+                top: -28,
+                translate: '-50% 0',
                 background: '#162434',
                 border: `2px solid ${PX.blueLight}`,
-                padding: '3px 6px',
+                padding: '3px 8px',
                 fontFamily: PIXEL_FONT,
                 fontSize: 8,
                 color: PX.blueLight,
-                textAlign: 'center',
+                whiteSpace: 'nowrap',
               }}
             >
               ASISTEN
             </div>
+            <PixelSprite src="villager_blue_walk_0.png" w={164} h={266} flipX />
           </div>
 
           <PixelChip
             text="TOKO MAKIN BESAR • MEMPEKERJAKAN SATU ASISTEN"
             x={320}
-            y={594}
+            y={602}
             centerX
             borderColor={PX.blueLight}
             color="#E0F0FF"
             fontSize={9}
+            style={{zIndex: 44}}
           />
         </>
       }

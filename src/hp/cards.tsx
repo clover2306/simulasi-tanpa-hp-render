@@ -3,7 +3,7 @@ import {AbsoluteFill, useCurrentFrame} from 'remotion';
 import {W} from '../lib/tokens';
 import {PIXEL_FONT} from '../pixelFont';
 import {PX, PixelCard, PixelChip, PixelSprite} from '../components/PixelUI';
-import {pxSnap, step01} from './plan';
+import {smooth01} from './plan';
 import {ParallelMapStage} from './map';
 
 /**
@@ -24,8 +24,8 @@ export const FlipScoreNumber: React.FC<{
 
   if (prevVal === null) {
     if (f < flipAt) return null;
-    const u = step01(f, flipAt, flipAt + 8, 4);
-    scaleY = Math.max(0.15, u);
+    const flipStep = Math.min(4, Math.max(1, Math.ceil(((f - flipAt + 1) / 8) * 4)));
+    scaleY = flipStep / 4;
   } else if (f < flipAt) {
     shown = prevVal;
     scaleY = 1;
@@ -97,18 +97,18 @@ export const CheckpointBeat: React.FC<CheckpointSceneConfig> = ({
   const flipAt = 28;
   const freezeEnd = Math.min(dur - 18, isFinalY20 ? 150 : 96);
 
-  const enterU = step01(f, cardEnter, cardEnter + 10, 5);
+  const enterU = smooth01(f, cardEnter, cardEnter + 12);
   const showCards = f >= cardEnter;
 
   const kWins = k > m;
   // Badge X position: left card center = 340, right card center = 940
   let badgeX = kWins ? 340 : 940;
   if (crossoverY6) {
-    const glideU = step01(f, flipAt + 8, flipAt + 88, 16);
-    badgeX = pxSnap(940 + (340 - 940) * glideU, 4);
+    const glideU = smooth01(f, flipAt + 8, flipAt + 88);
+    badgeX = 940 + (340 - 940) * glideU;
   }
   const badgeColor = badgeX < 640 ? PX.gold : PX.blueLight;
-  const badgeOpacity = dimmerLeadBadge ? 0.58 : 1;
+  const badgeOpacity = (dimmerLeadBadge ? 0.58 : 1) * smooth01(f, flipAt + 6, flipAt + 16);
 
   const cardW = isFinalY20 ? 460 : 420;
   const cardH = isFinalY20 ? 226 : 196;
@@ -117,11 +117,12 @@ export const CheckpointBeat: React.FC<CheckpointSceneConfig> = ({
   const cardY = isFinalY20 ? 196 : 214;
 
   const showA8aIntro = isFinalY20 && f >= introAtF;
+  const dimMap = 0.14 + (0.42 - 0.14) * enterU;
 
   return (
     <ParallelMapStage
       focus="dual"
-      dimAll={showCards ? 0.42 : 0.14}
+      dimAll={dimMap}
       marketTier={marketTier}
       freezeWindow={[freezeStart, freezeEnd]}
     >
@@ -337,6 +338,7 @@ export const CharacterHeaderCard: React.FC<{
   mechanism?: string;
   extraBadge?: string;
   y?: number;
+  appearAt?: number;
 }> = ({
   portrait,
   name,
@@ -347,17 +349,26 @@ export const CharacterHeaderCard: React.FC<{
   mechanism,
   extraBadge,
   y = 66,
-}) => (
-  <div
-    style={{
-      position: 'absolute',
-      left: '50%',
-      top: y,
-      translate: '-50% 0',
-      zIndex: 48,
-      pointerEvents: 'none',
-    }}
-  >
+  appearAt = 0,
+}) => {
+  const f = useCurrentFrame();
+  const popU = smooth01(f, appearAt, appearAt + 14);
+  const popSc = 0.94 + 0.06 * popU;
+
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        left: '50%',
+        top: y,
+        translate: '-50% 0',
+        opacity: popU,
+        transform: `scale(${popSc})`,
+        transformOrigin: '50% 50%',
+        zIndex: 48,
+        pointerEvents: 'none',
+      }}
+    >
     <PixelCard
       borderColor={verdictText ? verdictAccent : PX.gold}
       bg="rgba(18, 16, 14, 0.95)"
@@ -426,7 +437,8 @@ export const CharacterHeaderCard: React.FC<{
       </div>
     </PixelCard>
   </div>
-);
+  );
+};
 
 /**
  * Academic Study Quote Card (Pagar 6 & 7: simple quote card over dimmed plate, zero scenes/charts).
@@ -440,7 +452,7 @@ export const StudyQuoteBeat: React.FC<{
   accent?: string;
 }> = ({citation, journal, points, closingText, closingAtF, accent = PX.gold}) => {
   const f = useCurrentFrame();
-  const enterU = step01(f, 0, 12, 6);
+  const enterU = smooth01(f, 0, 16);
 
   return (
     <ParallelMapStage focus="dual" dimAll={0.7}>
@@ -492,12 +504,13 @@ export const StudyQuoteBeat: React.FC<{
 
           <div style={{display: 'flex', flexDirection: 'column', gap: 14}}>
             {points.map((pt) => {
+              const visU = smooth01(f, pt.atF, pt.atF + 14);
               const vis = f >= pt.atF;
               return (
                 <div
                   key={pt.text}
                   style={{
-                    opacity: vis ? 1 : 0.14,
+                    opacity: 0.14 + 0.86 * visU,
                     background: vis ? '#231F1B' : '#191614',
                     border: `2px solid ${vis ? accent : '#342E28'}`,
                     padding: '12px 16px',
@@ -516,6 +529,7 @@ export const StudyQuoteBeat: React.FC<{
             <div
               style={{
                 marginTop: 20,
+                opacity: smooth01(f, closingAtF, closingAtF + 14),
                 background: '#2A2114',
                 border: `3px solid ${PX.gold}`,
                 padding: '13px 18px',

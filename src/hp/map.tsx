@@ -3,14 +3,14 @@ import {AbsoluteFill, Img, staticFile, useCurrentFrame} from 'remotion';
 import {W, H} from '../lib/tokens';
 import {PX, PixelSprite} from '../components/PixelUI';
 import {Walker, evalWalker, type WalkerSpec} from '../components/Walker';
-import {pxSnap} from './plan';
 import {SekatBar} from './hud';
 
 export type MapFocus = 'dual' | 'left' | 'right';
 
 export interface ParallelMapProps {
   focus?: MapFocus;
-  focusStrength?: number; // 0..1 stepped
+  focusStrength?: number; // 0..1 continuous
+  baseScale?: number; // subtle zoom creep on dual frame
   dimAll?: number;
   dimLeft?: number;
   dimRight?: number;
@@ -281,7 +281,7 @@ const SignalRings: React.FC<{
     <>
       {[0, 1, 2].map((i) => {
         const u = ((frame * (danger ? 2.4 : 1.3) + i * 28) % 84) / 84;
-        const r = Math.round((16 + u * 88) / 4) * 4;
+        const r = 16 + u * 88;
         const op = (1 - u) * (danger ? 0.85 : 0.62);
         return (
           <div
@@ -306,6 +306,7 @@ const SignalRings: React.FC<{
 export const ParallelMapStage: React.FC<ParallelMapProps> = ({
   focus = 'dual',
   focusStrength = 1,
+  baseScale = 1,
   dimAll = 0,
   dimLeft = 0,
   dimRight = 0,
@@ -339,12 +340,10 @@ export const ParallelMapStage: React.FC<ParallelMapProps> = ({
     }
   }
 
-  // Pixel-grid stepped camera zoom/pan: keeps BOTH plates visible even when focused on one!
+  // Continuous smooth camera zoom/pan: keeps BOTH plates visible even when focused on one!
   const u = focus === 'dual' ? 0 : focusStrength;
-  const targetScale = 1 + 0.24 * u;
-  const sc = Math.round(targetScale * 100) / 100;
-  const rawPanX = focus === 'left' ? 136 * u : focus === 'right' ? -136 * u : 0;
-  const tx = pxSnap(rawPanX, 4);
+  const sc = baseScale * (1 + 0.24 * u);
+  const tx = focus === 'left' ? 136 * u : focus === 'right' ? -136 * u : 0;
 
   const autoDimLeft = focus === 'right' ? Math.max(dimLeft, 0.52 * u) : dimLeft;
   const autoDimRight = focus === 'left' ? Math.max(dimRight, 0.52 * u) : dimRight;
@@ -381,7 +380,7 @@ export const ParallelMapStage: React.FC<ParallelMapProps> = ({
   ];
 
   // Identical cloud shadow drift across BOTH villages simultaneously (Nasib Acak Sama)
-  const cloudShift = pxSnap(((wf * 0.6) % 320) - 160, 4);
+  const cloudShift = ((wf * 0.6) % 320) - 160;
 
   return (
     <AbsoluteFill style={{overflow: 'hidden', backgroundColor: '#121810'}}>
@@ -476,8 +475,8 @@ export const ParallelMapStage: React.FC<ParallelMapProps> = ({
           ? bubbleAnchors.map(([x0, y0, x1, y1], idx) => {
               const spd = fastBubbles ? 2.6 : scamWave > 0.1 ? 2.1 : 1.0;
               const uB = ((wf * spd + idx * 23) % 90) / 90;
-              const bx = pxSnap(x0 + (x1 - x0) * uB, 2);
-              const by = pxSnap(y0 + (y1 - y0) * uB - Math.sin(uB * Math.PI) * 18, 2);
+              const bx = x0 + (x1 - x0) * uB;
+              const by = y0 + (y1 - y0) * uB - Math.sin(uB * Math.PI) * 18;
               const isScam = scamWave > 0.2 && idx % 2 === 0;
               return (
                 <PixelSprite

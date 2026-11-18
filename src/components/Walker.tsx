@@ -169,14 +169,14 @@ export const Walker: React.FC<Omit<WalkerSpec, 'id'>> = ({
 
   const w = Math.round(32 * scale);
   const h = Math.round(52 * scale);
-  const bob = !frozen && ev.moving && (ev.stepIdx === 1 || ev.stepIdx === 3) ? -2 * scale : 0;
+  const bob = !frozen && ev.moving && (ev.stepIdx === 1 || ev.stepIdx === 3) ? -Math.min(6, 2 * scale) : 0;
 
   return (
     <div
       style={{
         position: 'absolute',
-        left: Math.round(ev.x - w / 2),
-        top: Math.round(ev.y - h + bob),
+        left: ev.x - w / 2,
+        top: ev.y - h + bob,
         width: w,
         height: h,
         opacity,

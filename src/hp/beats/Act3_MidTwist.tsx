@@ -4,7 +4,7 @@ import {W} from '../../lib/tokens';
 import {PIXEL_FONT} from '../../pixelFont';
 import {PX, PixelBubble, PixelCard, PixelChip, PixelSprite} from '../../components/PixelUI';
 import {Walker} from '../../components/Walker';
-import {beatDur, pxSnap, step01} from '../plan';
+import {beatDur, smooth01} from '../plan';
 import {DimensionLabelsBar} from '../hud';
 import {ParallelMapStage} from '../map';
 import {SplitWorldStage} from '../stage';
@@ -16,9 +16,9 @@ export const B22_Dialog1Kertajaya: React.FC = () => {
   const childAsks = f < 96;
   const talkOpen = f >= 96 && Math.floor(f / 6) % 2 === 0;
 
-  // Slow pixel-stepped push-in & shifting evening warm light ("sampai satu jam")
-  const pushScale = 1.04 + 0.08 * step01(f, 0, dur, 10);
-  const warmAlpha = 0.08 + 0.18 * step01(f, 96, dur, 12);
+  // Continuous smooth push-in & shifting evening warm light ("sampai satu jam")
+  const pushScale = 1.04 + 0.08 * smooth01(f, 0, dur);
+  const warmAlpha = 0.08 + 0.18 * smooth01(f, 96, dur);
 
   return (
     <SplitWorldStage
@@ -26,7 +26,7 @@ export const B22_Dialog1Kertajaya: React.FC = () => {
       rightBg="bg_rumah_makan.png"
       splitRatio={0.74}
       leftScale={pushScale}
-      leftTint={`rgba(255, 175, 70, ${warmAlpha.toFixed(2)})`}
+      leftTint={`rgba(255, 175, 70, ${warmAlpha.toFixed(4)})`}
       rightTint="rgba(22, 48, 95, 0.3)"
       leftContent={
         <>
@@ -47,17 +47,17 @@ export const B22_Dialog1Kertajaya: React.FC = () => {
               h={388}
             />
           </div>
-          {/* Attentive young child seated on right wooden chair */}
-          <div style={{position: 'absolute', left: 576, top: 360, width: 68, height: 84, overflow: 'hidden'}}>
-            <PixelSprite src="villager_blue_walk_0.png" w={60} h={98} flipX />
+          {/* Proportional attentive child (~214px) seated on right wooden chair */}
+          <div style={{position: 'absolute', left: 590, top: 292, width: 144, height: 214, overflow: 'hidden'}}>
+            <PixelSprite src="villager_blue_walk_0.png" w={144} h={234} flipX />
           </div>
 
           {!childAsks ? (
             <>
               <PixelBubble
                 text="Dulu Ayah kejar layangan di pematang sawah..."
-                x={84}
-                y={128}
+                x={64}
+                y={122}
                 maxW={340}
                 at={106}
               />
@@ -65,7 +65,7 @@ export const B22_Dialog1Kertajaya: React.FC = () => {
                 <PixelBubble
                   text="...lalu sore hari bikin mainan kayu bareng teman!"
                   x={498}
-                  y={156}
+                  y={128}
                   maxW={340}
                   tail="bottom-right"
                   at={215}
@@ -98,7 +98,7 @@ export const B22_Dialog1Kertajaya: React.FC = () => {
           x={58}
           y={506}
           w={820}
-          revealProgress={step01(f, 8, 52, 16)}
+          revealProgress={smooth01(f, 8, 52)}
         />
       ) : (
         <RpgDialogBox
@@ -108,7 +108,7 @@ export const B22_Dialog1Kertajaya: React.FC = () => {
           x={58}
           y={506}
           w={820}
-          revealProgress={step01(f, 98, 175, 20)}
+          revealProgress={smooth01(f, 98, 175)}
         />
       )}
     </SplitWorldStage>
@@ -119,11 +119,12 @@ export const B23_Dialog1Mekarsari: React.FC = () => {
   const f = useCurrentFrame();
   // Camera completely static & cold on Mekarsari ("Kamera diam, dingin")
   const splitRatio = 0.26;
-  const leftW = pxSnap(W * splitRatio, 4);
+  const leftW = W * splitRatio;
 
   const phaseChildAsks = f < 64;
   const phaseHarjoShort = f >= 64 && f < 120;
   // After f=120: child bows head silently; child's dialog box NEVER appears again!
+  const bowOffset = 14 * smooth01(f, 118, 138);
 
   return (
     <SplitWorldStage
@@ -161,19 +162,19 @@ export const B23_Dialog1Mekarsari: React.FC = () => {
           >
             <PixelSprite src="portrait_harjo_dinner_phone.png" w={188} h={388} />
           </div>
-          <PixelSprite src="hp_table.png" x={568} y={522} w={44} h={31} />
-          {/* Young child seated on right wooden chair, looks down silently at f>=120 */}
+          <PixelSprite src="hp_table.png" x={536} y={522} w={44} h={31} />
+          {/* Proportional young child (~214px) seated on right wooden chair, bows head silently at f>=120 */}
           <div
             style={{
               position: 'absolute',
-              left: 576,
-              top: f >= 120 ? 372 : 360,
-              width: 68,
-              height: 82,
+              left: 590,
+              top: 292 + bowOffset,
+              width: 144,
+              height: 214,
               overflow: 'hidden',
             }}
           >
-            <PixelSprite src="villager_blue_walk_0.png" w={60} h={98} flipX />
+            <PixelSprite src="villager_blue_walk_0.png" w={144} h={234} flipX />
           </div>
         </>
       }
@@ -186,7 +187,7 @@ export const B23_Dialog1Mekarsari: React.FC = () => {
           x={leftW + 46}
           y={506}
           w={840}
-          revealProgress={step01(f, 4, 42, 14)}
+          revealProgress={smooth01(f, 4, 42)}
         />
       ) : phaseHarjoShort ? (
         <RpgDialogBox
@@ -196,7 +197,7 @@ export const B23_Dialog1Mekarsari: React.FC = () => {
           x={leftW + 46}
           y={506}
           w={840}
-          revealProgress={step01(f, 66, 98, 12)}
+          revealProgress={smooth01(f, 66, 98)}
         />
       ) : (
         /* Silent chair — child's dialog box does NOT appear again */
@@ -209,7 +210,7 @@ export const B23_Dialog1Mekarsari: React.FC = () => {
           color="#C2D4E8"
           bg="rgba(12, 18, 26, 0.94)"
           fontSize={11}
-          style={{zIndex: 48}}
+          style={{zIndex: 48, opacity: smooth01(f, 120, 136)}}
         />
       )}
     </SplitWorldStage>
@@ -230,8 +231,9 @@ export const B24_CheckpointY10: React.FC = () => (
 
 export const B25_Tebakan: React.FC = () => {
   const f = useCurrentFrame();
-  const u = step01(f, 0, 14, 6);
+  const u = smooth01(f, 0, 16);
   const showCta = f >= 92;
+  const ctaU = smooth01(f, 92, 108);
 
   return (
     <ParallelMapStage focus="dual" dimAll={0.62} marketTier={1}>
@@ -260,7 +262,7 @@ export const B25_Tebakan: React.FC = () => {
             Sepuluh tahun lagi, apakah Mekarsari bisa mengejar? Atau jurangnya makin lebar?
           </div>
           {showCta ? (
-            <div style={{marginTop: 24, textAlign: 'center'}}>
+            <div style={{marginTop: 24, textAlign: 'center', opacity: ctaU}}>
               <span
                 style={{
                   display: 'inline-block',
@@ -284,8 +286,8 @@ export const B25_Tebakan: React.FC = () => {
 export const B26_ScamWave: React.FC = () => {
   const f = useCurrentFrame();
   const dur = beatDur('B26'); // 407
-  const scamWave = step01(f, 28, 280, 12);
-  const zoomU = f < dur - 55 ? step01(f, 12, 65, 8) : 1 - step01(f, dur - 55, dur - 10, 8);
+  const scamWave = smooth01(f, 28, 280);
+  const zoomU = f < dur - 55 ? smooth01(f, 12, 65) : 1 - smooth01(f, dur - 55, dur - 10);
 
   // Single small pixel jolt (not excessive per Brief A5)
   const shakeX = f >= 152 && f < 160 ? (f % 2 === 0 ? 4 : -4) : 0;
@@ -316,7 +318,8 @@ export const B26_ScamWave: React.FC = () => {
               style={{
                 position: 'absolute',
                 left: st.x,
-                top: st.y + pxSnap(Math.sin(f / 6 + st.at) * 4, 2),
+                top: st.y + Math.sin(f / 6 + st.at) * 4,
+                opacity: smooth01(f, st.at, st.at + 12),
                 display: 'flex',
                 alignItems: 'center',
                 gap: 6,
@@ -344,7 +347,11 @@ export const B26_ScamWave: React.FC = () => {
             borderColor={PX.red}
             bg="rgba(26, 12, 12, 0.96)"
             pad="12px 18px"
-            style={{zIndex: 46, textAlign: 'center'}}
+            style={{
+              zIndex: 46,
+              textAlign: 'center',
+              opacity: smooth01(f, 204, 218),
+            }}
           >
             <div style={{fontSize: 13, color: PX.red}}>30 WARGA KEHILANGAN UANG</div>
             <div style={{fontSize: 9, color: '#F4CEC6', marginTop: 6}}>
@@ -363,7 +370,7 @@ export const B26_ScamWave: React.FC = () => {
 export const B27_OmenMekarsari: React.FC = () => {
   const f = useCurrentFrame();
   const splitRatio = 0.28;
-  const leftW = pxSnap(W * splitRatio, 4);
+  const leftW = W * splitRatio;
   const rightW = W - leftW;
   const talkOpen = Math.floor(f / 7) % 2 === 0;
 
@@ -383,7 +390,7 @@ export const B27_OmenMekarsari: React.FC = () => {
       }
       rightContent={
         <>
-          <div style={{position: 'absolute', left: 520, top: 218}}>
+          <div style={{position: 'absolute', left: 648, top: 214}}>
             <PixelSprite
               src={talkOpen ? 'portrait_omen_open.png' : 'portrait_omen_neutral.png'}
               w={184}
@@ -392,15 +399,15 @@ export const B27_OmenMekarsari: React.FC = () => {
             />
           </div>
 
-          {/* Queue of neighbors standing on open checkered floor asking if message is safe */}
-          <Walker sprite="villager_red" path={[[452, 566]]} scale={1.7} carryingPhone />
-          <Walker sprite="villager_blue" path={[[398, 576]]} scale={1.6} carryingPhone />
-          <Walker sprite="villager_green" path={[[344, 586]]} scale={1.5} carryingPhone />
+          {/* Proportional queue of adult neighbors standing on open checkered floor asking if message is safe */}
+          <Walker sprite="villager_red" path={[[472, 586]]} scale={5.5} carryingPhone />
+          <Walker sprite="villager_blue" path={[[332, 592]]} scale={5.3} carryingPhone />
+          <Walker sprite="villager_green" path={[[196, 598]]} scale={5.1} carryingPhone />
 
           <PixelBubble
             text='"Bang, pesan ini aman tidak?"'
-            x={168}
-            y={224}
+            x={224}
+            y={172}
             maxW={310}
             tail="bottom-right"
             at={16}
@@ -410,8 +417,8 @@ export const B27_OmenMekarsari: React.FC = () => {
           <div
             style={{
               position: 'absolute',
-              left: 418,
-              top: 318,
+              left: 548,
+              top: 274,
               opacity: scamExtinguished ? 0.18 : 1,
               filter: scamExtinguished ? 'grayscale(1)' : undefined,
             }}
@@ -437,12 +444,13 @@ export const B27_OmenMekarsari: React.FC = () => {
 
           <PixelChip
             text="BANG OMEN MENJADI PENJELAS • MELINDUNGI WARGA"
-            x={Math.round(rightW / 2)}
-            y={590}
+            x={rightW / 2}
+            y={602}
             centerX
             borderColor={PX.blueLight}
             color="#E4F2FF"
             fontSize={10}
+            style={{zIndex: 44}}
           />
         </>
       }
@@ -455,7 +463,7 @@ export const B27_OmenMekarsari: React.FC = () => {
 export const B28_OmenKertajaya: React.FC = () => {
   const f = useCurrentFrame();
   const splitRatio = 0.72;
-  const leftW = pxSnap(W * splitRatio, 4);
+  const leftW = W * splitRatio;
   const talkOpen = Math.floor(f / 8) % 2 === 0;
 
   return (
@@ -466,28 +474,29 @@ export const B28_OmenKertajaya: React.FC = () => {
       leftContent={
         <>
           {/* Omen teaching 3 young apprentices with radio & background bicycle (NO flashback, NO pump sprite!) */}
-          <div style={{position: 'absolute', left: 160, top: 218}}>
+          <div style={{position: 'absolute', left: 142, top: 214}}>
             <PixelSprite
               src={talkOpen ? 'portrait_omen_open.png' : 'portrait_omen_happy.png'}
               w={184}
               h={380}
             />
           </div>
-          <PixelSprite src="radio.png" x={368} y={376} w={84} h={70} />
+          <PixelSprite src="radio.png" x={346} y={376} w={84} h={70} />
 
-          {/* 3 young dark-haired apprentices learning on open wooden floor */}
-          <Walker sprite="villager_blue" path={[[504, 580]]} scale={1.4} idleFacingLeft chatDot />
-          <Walker sprite="villager_green" path={[[588, 584]]} scale={1.4} idleFacingLeft />
-          <Walker sprite="villager_red" path={[[672, 588]]} scale={1.4} idleFacingLeft chatDot />
+          {/* 3 proportional young apprentices (~239-250px) learning on open wooden floor */}
+          <Walker sprite="villager_blue" path={[[496, 588]]} scale={4.7} idleFacingLeft chatDot />
+          <Walker sprite="villager_green" path={[[638, 592]]} scale={4.8} idleFacingLeft />
+          <Walker sprite="villager_red" path={[[780, 596]]} scale={4.6} idleFacingLeft chatDot />
 
           <PixelChip
             text="MENGAJARI TIGA ANAK MUDA • ILMU DITURUNKAN"
-            x={Math.round(leftW / 2)}
-            y={594}
+            x={leftW / 2}
+            y={602}
             centerX
             borderColor={PX.gold}
             color={PX.goldHi}
             fontSize={10}
+            style={{zIndex: 44}}
           />
         </>
       }
@@ -517,7 +526,7 @@ export const B29_CheckpointY12: React.FC = () => (
 export const B30_Dialog2Omen: React.FC = () => {
   const f = useCurrentFrame();
   const splitRatio = 0.26;
-  const leftW = pxSnap(W * splitRatio, 4);
+  const leftW = W * splitRatio;
 
   // 3 sequential RPG dialog boxes; "Nah, itu jawabannya." held longer & cracks the scam bubble!
   const box1 = f >= 14 && f < 174;
@@ -535,28 +544,28 @@ export const B30_Dialog2Omen: React.FC = () => {
       splitRatio={splitRatio}
       rightScale={1.06}
       leftContent={
-        /* Kertajaya stays dimly alive at left: Omen & apprentice calm without dialog */
+        /* Kertajaya stays dimly alive at left: Omen & proportional apprentice calm without dialog */
         <>
-          <div style={{position: 'absolute', left: 56, top: 242}}>
+          <div style={{position: 'absolute', left: 34, top: 242}}>
             <PixelSprite src="portrait_omen_repair_radio.png" w={152} h={314} />
           </div>
-          <Walker sprite="villager_blue" path={[[246, 582]]} scale={1.35} idleFacingLeft />
+          <Walker sprite="villager_blue" path={[[238, 562]]} scale={4.2} idleFacingLeft />
         </>
       }
       rightContent={
         <>
-          {/* Neighbor standing cleanly on open checkered tile floor holding out his phone */}
-          <Walker sprite="villager_red" path={[[466, 572]]} scale={2.05} />
-          <PixelSprite src="hp_hand.png" x={496} y={494} w={34} h={42} />
+          {/* Proportional adult neighbor standing cleanly on open checkered tile floor holding out his phone */}
+          <Walker sprite="villager_red" path={[[428, 586]]} scale={5.6} />
+          <PixelSprite src="hp_hand.png" x={494} y={396} w={44} h={55} />
           {scamCracked ? (
             <PixelChip
               text="> LEGA"
-              x={466}
-              y={428}
+              x={428}
+              y={246}
               centerX
               borderColor={PX.green}
               color={PX.greenHi}
-              fontSize={8}
+              fontSize={9}
             />
           ) : null}
 
@@ -564,8 +573,8 @@ export const B30_Dialog2Omen: React.FC = () => {
           <div
             style={{
               position: 'absolute',
-              left: 288,
-              top: 186,
+              left: 68,
+              top: 168,
               opacity: scamCracked ? 0.72 : 1,
               background: scamCracked ? '#261818' : '#3A1212',
               border: `3px solid ${scamCracked ? '#9A4848' : PX.red}`,
@@ -608,7 +617,7 @@ export const B30_Dialog2Omen: React.FC = () => {
           </div>
 
           {/* Bang Omen at counter */}
-          <div style={{position: 'absolute', left: 618, top: 196}}>
+          <div style={{position: 'absolute', left: 648, top: 196}}>
             <PixelSprite
               src={
                 mouthOpen
@@ -633,7 +642,7 @@ export const B30_Dialog2Omen: React.FC = () => {
           x={leftW + 46}
           y={506}
           w={850}
-          revealProgress={step01(f, 16, 86, 20)}
+          revealProgress={smooth01(f, 16, 86)}
         />
       ) : box2 ? (
         <RpgDialogBox
@@ -647,7 +656,7 @@ export const B30_Dialog2Omen: React.FC = () => {
           x={leftW + 46}
           y={506}
           w={850}
-          revealProgress={f < 252 ? step01(f, 180, 220, 12) : 1}
+          revealProgress={f < 252 ? smooth01(f, 180, 220) : 1}
         />
       ) : box3 ? (
         <RpgDialogBox
@@ -657,25 +666,67 @@ export const B30_Dialog2Omen: React.FC = () => {
           x={leftW + 46}
           y={506}
           w={850}
-          revealProgress={step01(f, 340, 372, 10)}
+          revealProgress={smooth01(f, 340, 372)}
         />
       ) : null}
     </SplitWorldStage>
   );
 };
 
-export const B31_DikaGuru: React.FC = () => {
-  const f = useCurrentFrame();
-  const splitRatio = 0.74;
-  const leftW = pxSnap(W * splitRatio, 4);
+interface StudentSeatSpec {
+  id: number;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  cropH: number;
+  sprite: string;
+  litOrder: number;
+}
 
-  // Light spreads from adult teacher Dika to 30 young students one by one!
-  const litCount = Math.min(30, Math.max(0, Math.floor(((f - 24) / 230) * 30)));
-  const studentSprites = [
+const B31_STUDENT_ROWS: StudentSeatSpec[] = (() => {
+  const sprites = [
     'villager_blue_walk_0.png',
     'villager_green_walk_0.png',
     'villager_red_walk_0.png',
   ];
+  const raw: Array<Omit<StudentSeatSpec, 'litOrder'>> = [];
+  let id = 0;
+  // 4 depth-proportioned seated rows across the classroom desks: 8 + 8 + 7 + 7 = 30 students
+  const rowConfigs = [
+    {count: 8, x0: 30, step: 82, y: 248, w: 72, h: 117, cropH: 92},
+    {count: 8, x0: 24, step: 84, y: 320, w: 80, h: 130, cropH: 106},
+    {count: 7, x0: 40, step: 92, y: 396, w: 88, h: 143, cropH: 118},
+    {count: 7, x0: 32, step: 96, y: 466, w: 96, h: 156, cropH: 118},
+  ];
+  for (const rc of rowConfigs) {
+    for (let c = 0; c < rc.count; c++) {
+      raw.push({
+        id,
+        x: rc.x0 + c * rc.step,
+        y: rc.y + (c % 2 === 0 ? 0 : 4),
+        w: rc.w,
+        h: rc.h,
+        cropH: rc.cropH,
+        sprite: sprites[(id + c) % sprites.length],
+      });
+      id++;
+    }
+  }
+  // Light spreads outward from teacher Dika on the right (largest x -> smallest x)
+  const byDist = [...raw].sort((a, b) => b.x - a.x);
+  const orderMap = new Map<number, number>();
+  byDist.forEach((s, idx) => orderMap.set(s.id, idx));
+  return raw.map((s) => ({...s, litOrder: orderMap.get(s.id) ?? 0}));
+})();
+
+export const B31_DikaGuru: React.FC = () => {
+  const f = useCurrentFrame();
+  const splitRatio = 0.74;
+  const leftW = W * splitRatio;
+
+  // Light spreads from adult teacher Dika to all 30 proportional seated students one by one!
+  const litCount = Math.min(30, Math.max(0, Math.floor(((f - 24) / 230) * 30)));
 
   return (
     <SplitWorldStage
@@ -684,70 +735,43 @@ export const B31_DikaGuru: React.FC = () => {
       splitRatio={splitRatio}
       leftContent={
         <>
-          {/* Adult Dika teaching at blackboard */}
-          <div style={{position: 'absolute', left: 688, top: 184}}>
-            <PixelSprite src="portrait_dika_teacher.png" w={184} h={380} flipX />
-          </div>
+          {/* 30 proportional students seated in 4 depth rows (134..208px) facing teacher Dika */}
+          {B31_STUDENT_ROWS.map((st) => {
+            const isLit = st.litOrder < litCount;
+            return (
+              <div
+                key={st.id}
+                style={{
+                  position: 'absolute',
+                  left: st.x,
+                  top: st.y,
+                  width: st.w,
+                  height: st.cropH,
+                  overflow: 'hidden',
+                  filter: isLit
+                    ? 'drop-shadow(0 -3px 0 rgba(255, 224, 130, 0.9)) brightness(1.06)'
+                    : 'brightness(0.72)',
+                }}
+              >
+                <PixelSprite src={st.sprite} w={st.w} h={st.h} />
+              </div>
+            );
+          })}
 
-          {/* 30 young dark-haired students seated across the classroom desks lighting up one by one (no grid boxes!) */}
-          <div
-            style={{
-              position: 'absolute',
-              left: 44,
-              top: 386,
-              display: 'grid',
-              gridTemplateColumns: 'repeat(6, 98px)',
-              rowGap: 6,
-            }}
-          >
-            {Array.from({length: 30}, (_, idx) => {
-              const isLit = idx < litCount;
-              const sp = studentSprites[idx % 3];
-              return (
-                <div
-                  key={idx}
-                  style={{
-                    position: 'relative',
-                    width: 44,
-                    height: 32,
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    justifyContent: 'center',
-                    overflow: 'hidden',
-                  }}
-                >
-                  {isLit ? (
-                    <div
-                      style={{
-                        position: 'absolute',
-                        left: 6,
-                        top: 2,
-                        width: 32,
-                        height: 26,
-                        background: 'rgba(255, 224, 130, 0.34)',
-                        boxShadow: '0 0 0 2px rgba(255, 220, 120, 0.55)',
-                      }}
-                    />
-                  ) : null}
-                  <PixelSprite
-                    src={sp}
-                    w={28}
-                    h={45}
-                    style={{opacity: isLit ? 1 : 0.62}}
-                  />
-                </div>
-              );
-            })}
+          {/* Adult Dika teaching at blackboard on the right */}
+          <div style={{position: 'absolute', left: 742, top: 184}}>
+            <PixelSprite src="portrait_dika_teacher.png" w={184} h={380} flipX />
           </div>
 
           <PixelChip
             text="DIKA MENJADI GURU • 30 ANAK IKUT TERANGKAT"
-            x={Math.round(leftW / 2)}
-            y={594}
+            x={leftW / 2}
+            y={602}
             centerX
             borderColor={PX.gold}
             color={PX.goldHi}
             fontSize={10}
+            style={{zIndex: 44}}
           />
         </>
       }
@@ -763,13 +787,19 @@ export const B31_DikaGuru: React.FC = () => {
 export const B32_DikaMekarsari: React.FC = () => {
   const f = useCurrentFrame();
   const splitRatio = 0.26;
-  const leftW = pxSnap(W * splitRatio, 4);
+  const leftW = W * splitRatio;
   const rightW = W - leftW;
 
-  // 0..145: neat good job at HP shop; 145..285: close-up pause looking at child bowed to screen (ZERO flashback! Pagar 8/9)
+  // 0..145: neat good job at HP shop; 145..285: smooth close-up pause looking at child bowed to screen (ZERO flashback! Pagar 8/9)
   const closeUp = f >= 145;
+  const closeU = smooth01(f, 145, 195);
   const blink = f % 86 >= 81;
-  const zoomScale = 1 + 0.14 * step01(f, 145, 190, 8);
+  const zoomScale = 1 + 0.14 * closeU;
+
+  const dikaX = 616 + (574 - 616) * closeU;
+  const dikaY = 212 + (176 - 212) * closeU;
+  const dikaW = 184 + (216 - 184) * closeU;
+  const dikaH = 380 + (446 - 380) * closeU;
 
   return (
     <SplitWorldStage
@@ -788,8 +818,8 @@ export const B32_DikaMekarsari: React.FC = () => {
           <div
             style={{
               position: 'absolute',
-              left: closeUp ? 548 : 596,
-              top: closeUp ? 168 : 212,
+              left: dikaX,
+              top: dikaY,
             }}
           >
             <PixelSprite
@@ -800,22 +830,22 @@ export const B32_DikaMekarsari: React.FC = () => {
                     ? 'portrait_dika_sad.png'
                     : 'portrait_dika_neutral.png'
               }
-              w={closeUp ? 224 : 184}
-              h={closeUp ? 462 : 380}
+              w={dikaW}
+              h={dikaH}
               flipX
             />
           </div>
 
-          {/* Young dark-haired child standing on open checkered floor (NOT inside glass display!) bowed to phone */}
-          <div style={{position: 'absolute', left: 438, top: 492}}>
-            <PixelSprite src="villager_blue_walk_0.png" w={46} h={74} />
-            <PixelSprite src="hp_hand.png" x={32} y={32} w={22} h={28} />
+          {/* Proportional young child (221px) standing on open checkered floor bowed to phone */}
+          <div style={{position: 'absolute', left: 396, top: 368}}>
+            <PixelSprite src="villager_blue_walk_0.png" w={136} h={221} />
+            <PixelSprite src="hp_hand.png" x={88} y={96} w={42} h={52} />
           </div>
 
           {closeUp ? (
             <PixelBubble
               text="..."
-              x={468}
+              x={482}
               y={178}
               maxW={120}
               tail="bottom-right"
@@ -829,16 +859,19 @@ export const B32_DikaMekarsari: React.FC = () => {
                 ? 'MELIHAT ANAK MENUNDUK KE LAYAR...'
                 : 'BEKERJA DI TOKO HP • PEKERJAAN BAGUS & RAPI'
             }
-            x={Math.round(rightW / 2)}
-            y={590}
+            x={rightW / 2}
+            y={602}
             centerX
             borderColor={PX.blueLight}
             color="#E0F0FF"
             fontSize={10}
+            style={{zIndex: 44}}
           />
         </>
       }
-    />
+    >
+      <div style={{display: 'none'}}>{leftW}</div>
+    </SplitWorldStage>
   );
 };
 

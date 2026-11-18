@@ -20,7 +20,7 @@ export const SekatBar: React.FC<{x?: number; top?: number; height?: number}> = (
   <div
     style={{
       position: 'absolute',
-      left: Math.round(x - 5),
+      left: x - 5,
       top,
       width: 10,
       height,

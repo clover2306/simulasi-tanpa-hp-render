@@ -4,7 +4,7 @@ import {W} from '../../lib/tokens';
 import {PIXEL_FONT} from '../../pixelFont';
 import {PX, PixelCard, PixelChip, PixelSprite} from '../../components/PixelUI';
 import {Walker} from '../../components/Walker';
-import {pxSnap, step01} from '../plan';
+import {smooth01} from '../plan';
 import {DimensionLabelsBar} from '../hud';
 import {ParallelMapStage} from '../map';
 import {SplitWorldStage} from '../stage';
@@ -241,7 +241,7 @@ export const B46_SeratusKali: React.FC = () => {
   return (
     <ParallelMapStage
       focus={beat === 3 ? 'right' : 'dual'}
-      focusStrength={beat === 3 ? step01(f, 430, 468, 8) * 0.8 : 0}
+      focusStrength={beat === 3 ? smooth01(f, 430, 468) * 0.8 : 0}
       dimAll={beat === 2 ? 0.62 : beat === 1 ? 0.34 + weatherFlash : 0.28}
       marketTier={beat === 3 ? 2 : 1}
       cleanMekarsariBubbles={beat === 3}
@@ -475,8 +475,8 @@ export const B48_JawabanInti: React.FC = () => {
                   [484, 560, 536, 566],
                 ];
                 const [sx, sy, tx, ty] = anchors[i % anchors.length];
-                const mx = pxSnap(sx + (tx - sx) * u, 2);
-                const my = pxSnap(sy + (ty - sy) * u - Math.sin(u * Math.PI) * 24, 2);
+                const mx = sx + (tx - sx) * u;
+                const my = sy + (ty - sy) * u - Math.sin(u * Math.PI) * 24;
                 return (
                   <div
                     key={i}
@@ -530,11 +530,11 @@ export const B48_JawabanInti: React.FC = () => {
                 const destX = i % 2 === 0 ? 182 : 512;
                 const destY = i % 2 === 0 ? 592 : 566;
                 const mx = toScreen
-                  ? pxSnap(fromX + (320 - fromX) * v, 2)
-                  : pxSnap(320 + (destX - 320) * v, 2);
+                  ? fromX + (320 - fromX) * v
+                  : 320 + (destX - 320) * v;
                 const my = toScreen
-                  ? pxSnap(562 + (522 - 562) * v, 2)
-                  : pxSnap(522 + (destY - 522) * v, 2);
+                  ? 562 + (522 - 562) * v
+                  : 522 + (destY - 522) * v;
                 const col = toScreen ? PX.blueLight : i % 2 === 0 ? PX.gold : PX.red;
                 return (
                   <div
@@ -792,17 +792,18 @@ export const B50_CTA: React.FC = () => (
 export const B51_Penutup: React.FC = () => {
   const f = useCurrentFrame();
   // 0..395: Two parallel dinners of Pak Harjo (identical dishes; M: HP stays in pocket!)
-  // 395..595: Pull back to full dual night village plates with warm lit house windows; HUD fades out!
+  // 395..595: Pull back smoothly to full dual night village plates with warm lit house windows; HUD fades out!
   const pullback = f >= 395;
-  const pullU = step01(f, 395, 455, 10);
+  const pullU = smooth01(f, 395, 470);
+  const dinnerScale = 1.02 + 0.04 * smooth01(f, 0, 260);
   const talkOpen = Math.floor(f / 8) % 2 === 0;
 
-  // Quiet small hand hesitation toward pocket in Mekarsari (150..240), then returns to table
+  // Quiet small hand hesitation toward pocket in Mekarsari (150..245), then returns to table
   const handReach =
     f >= 150 && f < 245
       ? f < 198
-        ? step01(f, 150, 195, 6)
-        : 1 - step01(f, 198, 245, 6)
+        ? smooth01(f, 150, 195)
+        : 1 - smooth01(f, 198, 245)
       : 0;
 
   if (pullback) {
@@ -826,13 +827,13 @@ export const B51_Penutup: React.FC = () => {
       leftBg="bg_rumah_makan.png"
       rightBg="bg_rumah_makan.png"
       splitRatio={0.5}
-      leftScale={1.04}
-      rightScale={1.04}
+      leftScale={dinnerScale}
+      rightScale={dinnerScale}
       leftTint="rgba(255, 190, 95, 0.1)"
       rightTint="rgba(255, 185, 95, 0.06)"
       leftContent={
         <>
-          {/* Kertajaya: Pak Harjo + grown child + young grandchild seated at dining table, ZERO HP */}
+          {/* Kertajaya: Pak Harjo + proportional grown child (228px) + grandchild (204px) seated at dining table, ZERO HP */}
           <div
             style={{
               position: 'absolute',
@@ -849,28 +850,29 @@ export const B51_Penutup: React.FC = () => {
               h={355}
             />
           </div>
-          {/* Grown child seated left chair */}
-          <div style={{position: 'absolute', left: 26, top: 378, width: 68, height: 88, overflow: 'hidden'}}>
-            <PixelSprite src="villager_blue_walk_0.png" w={60} h={98} />
+          {/* Grown child seated on left chair */}
+          <div style={{position: 'absolute', left: 4, top: 344, width: 140, height: 228, overflow: 'hidden'}}>
+            <PixelSprite src="villager_blue_walk_0.png" w={140} h={228} />
           </div>
-          {/* Young dark-haired grandchild seated right chair */}
-          <div style={{position: 'absolute', left: 424, top: 382, width: 52, height: 66, overflow: 'hidden'}}>
-            <PixelSprite src="villager_green_walk_0.png" w={44} h={72} flipX />
+          {/* Young dark-haired grandchild seated on right wooden chair */}
+          <div style={{position: 'absolute', left: 478, top: 382, width: 128, height: 204, overflow: 'hidden'}}>
+            <PixelSprite src="villager_green_walk_0.png" w={128} h={208} flipX />
           </div>
 
           <PixelChip
             text="MAKAN MALAM BERSAMA ANAK & CUCU • TANPA HP"
             x={320}
-            y={590}
+            y={602}
             centerX
             borderColor={PX.gold}
             fontSize={9}
+            style={{zIndex: 44}}
           />
         </>
       }
       rightContent={
         <>
-          {/* Mekarsari: Same Pak Harjo & family; HP silhouette stays in shirt pocket */}
+          {/* Mekarsari: Same Pak Harjo & proportional family; HP silhouette stays in shirt pocket */}
           <div
             style={{
               position: 'absolute',
@@ -887,11 +889,11 @@ export const B51_Penutup: React.FC = () => {
               h={355}
             />
           </div>
-          <div style={{position: 'absolute', left: 26, top: 378, width: 68, height: 88, overflow: 'hidden'}}>
-            <PixelSprite src="villager_blue_walk_0.png" w={60} h={98} />
+          <div style={{position: 'absolute', left: 4, top: 344, width: 140, height: 228, overflow: 'hidden'}}>
+            <PixelSprite src="villager_blue_walk_0.png" w={140} h={228} />
           </div>
-          <div style={{position: 'absolute', left: 424, top: 382, width: 52, height: 66, overflow: 'hidden'}}>
-            <PixelSprite src="villager_green_walk_0.png" w={44} h={72} flipX />
+          <div style={{position: 'absolute', left: 478, top: 382, width: 128, height: 204, overflow: 'hidden'}}>
+            <PixelSprite src="villager_green_walk_0.png" w={128} h={208} flipX />
           </div>
 
           {/* Faint HP silhouette in Pak Harjo's shirt pocket + quiet hand pause that returns to table */}
@@ -919,14 +921,14 @@ export const B51_Penutup: React.FC = () => {
               y={334}
               w={26}
               h={20}
-              style={{opacity: 0.42}}
+              style={{opacity: 0.42 * smooth01(f, 142, 154) * (1 - smooth01(f, 202, 216))}}
             />
           ) : null}
           <div
             style={{
               position: 'absolute',
-              left: pxSnap(232 + 22 * handReach, 2),
-              top: pxSnap(398 - 26 * handReach, 2),
+              left: 232 + 22 * handReach,
+              top: 398 - 26 * handReach,
               width: 12,
               height: 12,
               background: '#E2A87C',
@@ -937,11 +939,12 @@ export const B51_Penutup: React.FC = () => {
           <PixelChip
             text="HP ADA DI SAKU • MALAM INI TIDAK DIKELUARKAN"
             x={320}
-            y={590}
+            y={602}
             centerX
             borderColor={PX.blueLight}
             color="#E4F2FF"
             fontSize={9}
+            style={{zIndex: 44}}
           />
         </>
       }
@@ -952,7 +955,7 @@ export const B51_Penutup: React.FC = () => {
 export const B52_KalimatAkhir: React.FC = () => {
   const f = useCurrentFrame();
   // Hold sentence steadily (0..86f), then fade cleanly to black (86..113f)
-  const fadeBlack = step01(f, 86, 111, 10);
+  const fadeBlack = smooth01(f, 86, 111);
 
   return (
     <AbsoluteFill>

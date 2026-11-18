@@ -1,3 +1,5 @@
+import {Easing, interpolate} from 'remotion';
+
 export const FPS = 30;
 export const HP_TOTAL_FRAMES = 21350; // 711.68s @ 30fps
 
@@ -88,16 +90,16 @@ export const hpLocalF = (beatId: string, absSec: number): number => {
   return Math.round(absSec * FPS) - b.f0;
 };
 
-/** Pixel-snapped stepped interpolation (no smooth subpixel blur). */
-export const step01 = (f: number, fStart: number, fEnd: number, steps = 12): number => {
+/** Continuous easeInOutCubic interpolation in [0, 1] (zero quantization, zero pixel snapping). */
+export const smooth01 = (f: number, fStart: number, fEnd: number): number => {
   if (f <= fStart) return 0;
   if (f >= fEnd) return 1;
-  const raw = (f - fStart) / Math.max(1, fEnd - fStart);
-  const eased = raw < 0.5 ? 2 * raw * raw : 1 - Math.pow(-2 * raw + 2, 2) / 2;
-  return Math.round(eased * steps) / steps;
+  return interpolate(f, [fStart, fEnd], [0, 1], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+    easing: Easing.inOut(Easing.cubic),
+  });
 };
-
-export const pxSnap = (val: number, grid = 2): number => Math.round(val / grid) * grid;
 
 export interface HeldCheckpointScore {
   checkpointYear: number;
@@ -116,7 +118,7 @@ export interface HpHudState {
 
 export const hpHudStateAt = (gf: number): HpHudState => {
   if (gf >= 21020) {
-    const op = gf >= 21160 ? 0 : 1 - step01(gf, 21020, 21160, 10);
+    const op = gf >= 21160 ? 0 : 1 - smooth01(gf, 21020, 21160);
     return {
       yearLabel: 'TAHUN 20 • MALAM TERAKHIR',
       heldScore: null,

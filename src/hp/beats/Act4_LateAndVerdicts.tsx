@@ -4,15 +4,14 @@ import {W} from '../../lib/tokens';
 import {PIXEL_FONT} from '../../pixelFont';
 import {PX, PixelBubble, PixelCard, PixelChip, PixelSprite} from '../../components/PixelUI';
 import {Walker} from '../../components/Walker';
-import {beatDur, pxSnap, step01} from '../plan';
+import {beatDur, smooth01} from '../plan';
 import {SplitWorldStage} from '../stage';
 import {CharacterHeaderCard, CheckpointBeat, StudyQuoteBeat} from '../cards';
 
 export const B34_TiaBerhenti: React.FC = () => {
   const f = useCurrentFrame();
   const splitRatio = 0.26;
-  const leftW = pxSnap(W * splitRatio, 4);
-  const rightW = W - leftW;
+  const rightW = W * (1 - splitRatio);
 
   // 4 beats across 691f:
   // 1 (0..172): Week 1 restless pacing
@@ -42,16 +41,16 @@ export const B34_TiaBerhenti: React.FC = () => {
               <Walker
                 sprite="tia"
                 path={[
-                  [220, 638],
-                  [720, 638],
+                  [256, 638],
+                  [688, 638],
                 ]}
                 speed={120}
-                scale={2.05}
+                scale={5.5}
                 questionMark
               />
               <PixelChip
                 text="MINGGU KE-1: GELISAH TANPA AKUN"
-                x={Math.round(rightW / 2)}
+                x={rightW / 2}
                 y={162}
                 centerX
                 borderColor={PX.amber}
@@ -66,7 +65,7 @@ export const B34_TiaBerhenti: React.FC = () => {
                 style={{
                   position: 'absolute',
                   left: 560,
-                  top: 342 + pxSnap(Math.sin(f / 10) * 6, 2),
+                  top: 342 + Math.sin(f / 10) * 6,
                   background: '#162030',
                   border: `2px solid ${PX.blueLight}`,
                   padding: '8px 14px',
@@ -79,7 +78,7 @@ export const B34_TiaBerhenti: React.FC = () => {
               </div>
               <PixelChip
                 text="MINGGU KE-2: LAMPU PADAM AWAL • TIDUR LEBIH NYENYAK"
-                x={Math.round(rightW / 2)}
+                x={rightW / 2}
                 y={590}
                 centerX
                 borderColor={PX.green}
@@ -112,7 +111,7 @@ export const B34_TiaBerhenti: React.FC = () => {
               />
               <PixelChip
                 text="MINGGU KE-3: BENAR-BENAR MENELEPON IBUNYA"
-                x={Math.round(rightW / 2)}
+                x={rightW / 2}
                 y={162}
                 centerX
                 borderColor={PX.gold}
@@ -146,7 +145,7 @@ export const B34_TiaBerhenti: React.FC = () => {
               </div>
               <PixelChip
                 text="SETELAH SEBULAN: MEMAKAI HP LEBIH SEDIKIT — SELAMANYA"
-                x={Math.round(rightW / 2)}
+                x={rightW / 2}
                 y={162}
                 centerX
                 borderColor={PX.blueLight}
@@ -188,8 +187,9 @@ export const B36_EndangMenang: React.FC = () => {
   const f = useCurrentFrame();
   // Full commanding focus on Mekarsari (78% right), Kertajaya still visible at 22% left for fair contrast!
   const splitRatio = 0.22;
-  const leftW = pxSnap(W * splitRatio, 4);
+  const leftW = W * splitRatio;
   const rightW = W - leftW;
+  const cardU = smooth01(f, 36, 52);
 
   return (
     <SplitWorldStage
@@ -204,11 +204,12 @@ export const B36_EndangMenang: React.FC = () => {
           </div>
           <PixelChip
             text="LAPAK BIASA"
-            x={Math.round(leftW / 2)}
-            y={590}
+            x={leftW / 2}
+            y={602}
             centerX
             borderColor="#7A6E5D"
             fontSize={8}
+            style={{zIndex: 44}}
           />
         </>
       }
@@ -225,7 +226,7 @@ export const B36_EndangMenang: React.FC = () => {
           <div
             style={{
               position: 'absolute',
-              left: 622,
+              left: 618,
               top: 428,
               background: 'rgba(16, 26, 38, 0.96)',
               border: `3px solid ${PX.blueLight}`,
@@ -251,41 +252,46 @@ export const B36_EndangMenang: React.FC = () => {
             <PixelSprite src="portrait_endang_happy.png" w={188} h={388} />
           </div>
 
-          {/* Buyers entering strictly from outer right edge */}
+          {/* Proportional buyers entering strictly from outer right edge */}
           <Walker
             sprite="villager_blue"
             path={[
-              [rightW - 24, 578],
-              [796, 578],
+              [rightW - 44, 598],
+              [812, 598],
             ]}
             speed={46}
-            scale={1.55}
+            scale={5.3}
             idleFacingLeft
             carryingPhone
           />
           <Walker
             sprite="villager_red"
             path={[
-              [rightW - 18, 590],
-              [876, 590],
+              [rightW - 36, 606],
+              [906, 606],
             ]}
             speed={42}
             phase={0.45}
-            scale={1.5}
+            scale={5.1}
             idleFacingLeft
             carryingPhone
           />
 
           {f >= 36 ? (
             <PixelCard
-              x={Math.round(rightW / 2)}
+              x={rightW / 2}
               y={128}
               w={680}
               center
               borderColor={PX.gold}
               bg="rgba(18, 16, 14, 0.96)"
               pad="16px 24px"
-              style={{textAlign: 'center'}}
+              style={{
+                textAlign: 'center',
+                opacity: cardU,
+                transform: `scale(${0.94 + 0.06 * cardU})`,
+                zIndex: 45,
+              }}
             >
               <div style={{fontSize: 15, color: PX.gold}}>
                 &ldquo;Di sinilah aku harus jujur.&rdquo;
@@ -298,12 +304,13 @@ export const B36_EndangMenang: React.FC = () => {
 
           <PixelChip
             text="TOKO TERBESAR DI WILAYAH ITU • TIDAK SEMUA ORANG KALAH KARENA HP"
-            x={Math.round(rightW / 2)}
-            y={590}
+            x={rightW / 2}
+            y={602}
             centerX
             borderColor={PX.blueLight}
             color="#E8F6FF"
             fontSize={9}
+            style={{zIndex: 44}}
           />
         </>
       }
@@ -328,7 +335,7 @@ export const B38_Dialog3DuaMalam: React.FC = () => {
   const f = useCurrentFrame();
   // Synchronized lights out at f=590 -> brief dark hold at end (690..753), ZERO dialog boxes!
   const lightsOn = f < 590;
-  const endFade = step01(f, 685, 742, 8);
+  const endFade = smooth01(f, 685, 742);
 
   // 7 message bubbles in Mekarsari shop window extinguish one by one before lights out (Brief A4)
   const sevenBubbles: Array<{x: number; y: number; offAt: number; scam: boolean}> = [
@@ -527,26 +534,27 @@ export const B40_VerdictDika: React.FC = () => (
     splitRatio={0.72}
     leftContent={
       <>
-        <div style={{position: 'absolute', left: 368, top: 218}}>
-          <PixelSprite src="portrait_dika_teacher.png" w={188} h={388} />
+        {/* Proportional young dark-haired students standing on the classroom floor facing Dika (feet baseline 574, same as Dika) */}
+        <div style={{position: 'absolute', left: 64, top: 366, width: 128, height: 208, overflow: 'hidden'}}>
+          <PixelSprite src="villager_blue_walk_0.png" w={128} h={208} />
         </div>
-        {/* Young dark-haired students seated cleanly behind classroom desks */}
-        <div style={{position: 'absolute', left: 162, top: 432, width: 52, height: 48, overflow: 'hidden'}}>
-          <PixelSprite src="villager_blue_walk_0.png" w={44} h={72} />
+        <div style={{position: 'absolute', left: 274, top: 359, width: 132, height: 215, overflow: 'hidden'}}>
+          <PixelSprite src="villager_red_walk_0.png" w={132} h={215} />
         </div>
-        <div style={{position: 'absolute', left: 602, top: 436, width: 52, height: 48, overflow: 'hidden'}}>
-          <PixelSprite src="villager_red_walk_0.png" w={44} h={72} flipX />
+        <div style={{position: 'absolute', left: 486, top: 353, width: 136, height: 221, overflow: 'hidden'}}>
+          <PixelSprite src="villager_green_walk_0.png" w={136} h={221} />
         </div>
-        <div style={{position: 'absolute', left: 744, top: 416, width: 52, height: 48, overflow: 'hidden'}}>
-          <PixelSprite src="villager_green_walk_0.png" w={44} h={72} flipX />
+        <div style={{position: 'absolute', left: 706, top: 186}}>
+          <PixelSprite src="portrait_dika_teacher.png" w={188} h={388} flipX />
         </div>
         <PixelChip
           text="GURU • HIDUP TENANG • FOKUS 20 TAHUN JADI KARIER"
           x={460}
-          y={590}
+          y={602}
           centerX
           borderColor={PX.gold}
           fontSize={10}
+          style={{zIndex: 44}}
         />
       </>
     }
@@ -581,24 +589,24 @@ export const B41_VerdictEndang: React.FC = () => (
     rightContent={
       <>
         {/* Grounded abundant harvest baskets resting on the dirt market path */}
-        <PixelSprite src="stall_endang.png" x={528} y={422} w={152} h={120} />
-        <PixelSprite src="basket_goods.png" x={118} y={536} w={68} h={62} />
-        <PixelSprite src="basket_goods.png" x={196} y={548} w={68} h={62} />
-        <PixelSprite src="basket_goods.png" x={496} y={536} w={68} h={62} />
-        <PixelSprite src="basket_goods.png" x={574} y={548} w={68} h={62} />
-        <PixelSprite src="basket_goods.png" x={764} y={536} w={68} h={62} />
-        <div style={{position: 'absolute', left: 288, top: 222}}>
+        <PixelSprite src="stall_endang.png" x={498} y={422} w={152} h={120} />
+        <PixelSprite src="basket_goods.png" x={96} y={536} w={68} h={62} />
+        <PixelSprite src="basket_goods.png" x={174} y={548} w={68} h={62} />
+        <PixelSprite src="basket_goods.png" x={468} y={536} w={68} h={62} />
+        <PixelSprite src="basket_goods.png" x={546} y={548} w={68} h={62} />
+        <div style={{position: 'absolute', left: 268, top: 222}}>
           <PixelSprite src="portrait_endang_happy.png" w={188} h={388} />
         </div>
-        <Walker sprite="villager_blue" path={[[712, 578]]} scale={1.55} idleFacingLeft carryingPhone />
+        <Walker sprite="villager_blue" path={[[756, 598]]} scale={5.3} idleFacingLeft carryingPhone />
         <PixelChip
           text="PENGECUALIAN YANG JUJUR • HP ADALAH PASAR"
           x={460}
-          y={594}
+          y={602}
           centerX
           borderColor={PX.blueLight}
           color="#E8F6FF"
           fontSize={10}
+          style={{zIndex: 44}}
         />
       </>
     }
@@ -627,7 +635,7 @@ export const B42_VerdictHarjo: React.FC = () => (
         <div
           style={{
             position: 'absolute',
-            left: 300,
+            left: 294,
             top: 192,
             width: 188,
             height: 242,
@@ -636,19 +644,21 @@ export const B42_VerdictHarjo: React.FC = () => (
         >
           <PixelSprite src="portrait_harjo_happy.png" w={188} h={388} />
         </div>
-        <div style={{position: 'absolute', left: 168, top: 382, width: 68, height: 84, overflow: 'hidden'}}>
-          <PixelSprite src="villager_green_walk_0.png" w={60} h={98} />
+        {/* Proportional seated children (~214-224px) on left & right wooden dining chairs */}
+        <div style={{position: 'absolute', left: 48, top: 344, width: 138, height: 214, overflow: 'hidden'}}>
+          <PixelSprite src="villager_green_walk_0.png" w={138} h={224} />
         </div>
-        <div style={{position: 'absolute', left: 562, top: 364, width: 68, height: 82, overflow: 'hidden'}}>
-          <PixelSprite src="villager_blue_walk_0.png" w={60} h={98} flipX />
+        <div style={{position: 'absolute', left: 626, top: 364, width: 144, height: 224, overflow: 'hidden'}}>
+          <PixelSprite src="villager_blue_walk_0.png" w={144} h={234} flipX />
         </div>
         <PixelChip
           text="ANAK-ANAK DEKAT • MALAM PENUH PERCAKAPAN"
           x={460}
-          y={590}
+          y={602}
           centerX
           borderColor={PX.gold}
           fontSize={10}
+          style={{zIndex: 44}}
         />
       </>
     }
@@ -685,13 +695,13 @@ export const B43_VerdictTia: React.FC = () => (
     splitRatio={0.72}
     leftContent={
       <>
-        <div style={{position: 'absolute', left: 374, top: 258}}>
+        <div style={{position: 'absolute', left: 368, top: 258}}>
           <PixelSprite src="portrait_tia_happy.png" w={184} h={380} />
         </div>
-        {/* Close friends standing grounded on the green foreground meadow (NOT on palm treetops!) */}
-        <Walker sprite="villager_red" path={[[226, 636]]} scale={1.55} chatDot />
-        <Walker sprite="villager_green" path={[[636, 636]]} scale={1.55} idleFacingLeft chatDot />
-        <Walker sprite="villager_blue" path={[[728, 642]]} scale={1.5} idleFacingLeft />
+        {/* Proportional close friends standing grounded on the green foreground meadow */}
+        <Walker sprite="villager_red" path={[[186, 638]]} scale={5.2} chatDot />
+        <Walker sprite="villager_green" path={[[624, 638]]} scale={5.2} idleFacingLeft chatDot />
+        <Walker sprite="villager_blue" path={[[768, 642]]} scale={5.0} idleFacingLeft />
         <PixelChip
           text="TEMAN SEDIKIT • KESEPIANNYA TIDAK ADA"
           x={460}
@@ -729,38 +739,40 @@ export const B44_VerdictOmen: React.FC = () => (
     dimRight={0}
     leftContent={
       <>
-        <div style={{position: 'absolute', left: 196, top: 226}}>
+        <div style={{position: 'absolute', left: 138, top: 226}}>
           <PixelSprite src="portrait_omen_happy.png" w={176} h={364} />
         </div>
-        <PixelSprite src="radio.png" x={66} y={362} w={74} h={62} />
-        <Walker sprite="villager_blue" path={[[406, 580]]} scale={1.4} idleFacingLeft chatDot />
-        <Walker sprite="villager_green" path={[[482, 584]]} scale={1.4} idleFacingLeft />
-        <Walker sprite="villager_red" path={[[558, 588]]} scale={1.4} idleFacingLeft />
+        <PixelSprite src="radio.png" x={48} y={362} w={74} h={62} />
+        <Walker sprite="villager_blue" path={[[368, 588]]} scale={4.5} idleFacingLeft chatDot />
+        <Walker sprite="villager_green" path={[[474, 592]]} scale={4.5} idleFacingLeft />
+        <Walker sprite="villager_red" path={[[576, 588]]} scale={4.5} idleFacingLeft />
         <PixelChip
           text="BENGKEL BARU • MENGAJARI TIGA ORANG"
           x={320}
-          y={594}
+          y={602}
           centerX
           borderColor={PX.gold}
           fontSize={9}
+          style={{zIndex: 44}}
         />
       </>
     }
     rightContent={
       <>
-        <div style={{position: 'absolute', left: 374, top: 226}}>
+        <div style={{position: 'absolute', left: 418, top: 226}}>
           <PixelSprite src="portrait_omen_happy.png" w={176} h={364} flipX />
         </div>
-        <Walker sprite="villager_red" path={[[306, 576]]} scale={1.55} carryingPhone chatDot />
-        <Walker sprite="villager_blue" path={[[252, 586]]} scale={1.5} carryingPhone />
+        <Walker sprite="villager_red" path={[[318, 588]]} scale={5.1} carryingPhone chatDot />
+        <Walker sprite="villager_blue" path={[[192, 592]]} scale={4.9} carryingPhone />
         <PixelChip
           text="MENYELAMATKAN TETANGGA DARI PENIPUAN"
           x={320}
-          y={594}
+          y={602}
           centerX
           borderColor={PX.blueLight}
           color="#E4F2FF"
           fontSize={9}
+          style={{zIndex: 44}}
         />
       </>
     }

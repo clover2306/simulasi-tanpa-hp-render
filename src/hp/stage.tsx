@@ -3,7 +3,6 @@ import {AbsoluteFill, Img, staticFile} from 'remotion';
 import {W, H} from '../lib/tokens';
 import {PIXEL_FONT} from '../pixelFont';
 import {PX} from '../components/PixelUI';
-import {pxSnap} from './plan';
 import {HP_HUD_H, SekatBar} from './hud';
 
 export type GeneratedBgName =
@@ -52,14 +51,14 @@ export const SplitWorldStage: React.FC<{
   rightContent,
   children,
 }) => {
-  const splitX = pxSnap(W * Math.min(0.78, Math.max(0.22, splitRatio)), 4);
+  const splitX = W * Math.min(0.78, Math.max(0.22, splitRatio));
   const rightW = W - splitX;
 
   const autoDimL = dimLeft ?? (splitRatio < 0.42 ? 0.52 : 0);
   const autoDimR = dimRight ?? (splitRatio > 0.58 ? 0.52 : 0);
 
-  const lSc = Math.round(leftScale * 100) / 100;
-  const rSc = Math.round(rightScale * 100) / 100;
+  const lSc = leftScale;
+  const rSc = rightScale;
 
   return (
     <AbsoluteFill style={{overflow: 'hidden', backgroundColor: PX.bgDark}}>
@@ -77,11 +76,11 @@ export const SplitWorldStage: React.FC<{
         <div
           style={{
             position: 'absolute',
-            left: Math.round((splitX - W) / 2),
+            left: (splitX - W) / 2,
             top: 0,
             width: W,
             height: H,
-            transform: lSc !== 1 ? `scale(${lSc})` : undefined,
+            transform: Math.abs(lSc - 1) > 0.0001 ? `scale(${lSc})` : undefined,
             transformOrigin: '50% 55%',
           }}
         >
@@ -134,11 +133,11 @@ export const SplitWorldStage: React.FC<{
         <div
           style={{
             position: 'absolute',
-            left: Math.round((rightW - W) / 2),
+            left: (rightW - W) / 2,
             top: 0,
             width: W,
             height: H,
-            transform: rSc !== 1 ? `scale(${rSc})` : undefined,
+            transform: Math.abs(rSc - 1) > 0.0001 ? `scale(${rSc})` : undefined,
             transformOrigin: '50% 55%',
           }}
         >
