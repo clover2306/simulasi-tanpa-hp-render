@@ -1,0 +1,37 @@
+name: Render Full Remotion Tanpa HP (11,9 menit)
+
+# Render komposisi Full (21350 frame, 1280x720, 30fps) tanpa audio.
+# Narasi + BGM + SFX + caption digabung secara lokal oleh Clover.
+on:
+  workflow_dispatch:
+
+jobs:
+  render:
+    name: Render Full
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Ensure browser
+        run: npx remotion browser ensure
+
+      - name: Render Full
+        run: npx remotion render Full full-silent.mp4
+
+      - name: Upload video
+        uses: actions/upload-artifact@v4
+        with:
+          name: full-silent
+          path: full-silent.mp4
+          retention-days: 7
